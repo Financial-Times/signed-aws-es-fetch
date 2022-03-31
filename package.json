@@ -13,5 +13,5 @@
   "scripts": {
     "test": "node -r dotenv/config test/main.test.js"
   },
-  "author": "Jesus Redondo",
+  "author": "Jesus Redondo"
 }
