@@ -1,17 +1,19 @@
 {
-  "name": "@financial-times/signed-aws-es-fetch",
-  "version": "1.7.2",
-  "main": "main.js",
-  "dependencies": {
-    "aws4": "^1.1.0",
-    "denodeify": "^1.2.1",
-    "node-fetch": "^3.2.3"
-  },
-  "devDependencies": {
-    "dotenv": "^1.2.0"
-  },
-  "scripts": {
-    "test": "node -r dotenv/config test/main.test.js"
-  },
-  "author": "Jesus Redondo"
+	"name": "@financial-times/signed-aws-es-fetch",
+	"version": "1.7.2",
+	"main": "main.js",
+	"dependencies": {
+		"aws4": "^1.1.0",
+		"denodeify": "^1.2.1",
+		"node-fetch": "^3.2.3"
+	},
+	"devDependencies": {
+		"dotenv": "^1.2.0"
+	},
+	"scripts": {
+		"build": "npm install",
+		"ci": "echo 'ci'",
+		"test": "node -r dotenv/config test/main.test.js"
+	},
+	"author": "Jesus Redondo"
 }
