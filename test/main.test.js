@@ -1,33 +1,33 @@
-"use strict";
+const signedFetch = require('../main');
+const https = require('https');
 
-const signedFetch = require("../main");
+const keepAliveAgent = new https.Agent({ keepAlive: true });
+const DEFAULTS = {
+	query: { match_all: {} },
+	from: 0,
+	size: 10,
+	sort: { publishedDate: 'desc' },
+	_source: true
+};
 
-signedFetch(`https://next-elastic.ft.com/v2_api_v2/item/_search`, {
-	method: "POST",
-	timeout: 9000,
-	body: JSON.stringify({
-		fields: ["_lastUpdatedDateTime"],
-		size: 0,
-	}),
-	headers: {
-		"Content-Type": "application/json",
-	},
-})
-	.then(function (response) {
-		if (response.status !== 200) {
-			throw new Error("Response should be 200");
+test('Verify the request is signed sucessfully', async () => {
+	const body = JSON.stringify(DEFAULTS);
+	const timeout = 3000;
+
+	const result = await signedFetch(
+		'https://next-elasticsearch-v7.gslb.ft.com/content/_search',
+		{
+			body,
+			agent: keepAliveAgent,
+			timeout,
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json'
+			}
 		}
-		return response.json();
-	})
-	.then(function (data) {
-		if (data.timed_out !== false) {
-			throw new Error(
-				"Response should have come back with timed out property ‘false’"
-			);
-		}
-		console.log("All good!");
-	})
-	.catch(function (err) {
-		console.log(err);
-		process.exit(1);
-	});
+	);
+
+	expect(result.ok).toBe(true);
+	expect(result.status).toBe(200);
+	expect(result.statusText).toBe('OK');
+});
