@@ -12,7 +12,7 @@
 	},
 	"scripts": {
 		"build": "npm install",
-		"ci": "echo 'ci'",
+		"ci": "npm test",
 		"test": "jest ./test/main.test.js"
 	},
 	"author": "Jesus Redondo"
