@@ -11,8 +11,6 @@
 		"jest": "^27.5.1"
 	},
 	"scripts": {
-		"build": "npm install",
-		"ci": "npm test",
 		"test": "jest --forceExit ./test/main.test.js"
 	},
 	"author": "Jesus Redondo"
