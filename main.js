@@ -2,7 +2,6 @@
 
 const aws4 = require('aws4');
 const nodeFetch = require('node-fetch');
-const urlParse = require('url').parse;
 const resolveCname = require('util').promisify(require('dns').resolveCname);
 
 module.exports = async function (url, opts, creds) {
@@ -52,24 +51,26 @@ function setAwsCredentials(creds){
 	return creds;
 }
 
-function signedFetch(url, opts, creds) {
+function getSignableData(url, opts, creds) {
 	creds = setAwsCredentials(creds);
-
-	const urlObject = new URL(url);
+	const { host, path, protocol } = new URL(url);
 	const signable = {
 		method: opts.method,
-		host: urlObject.host,
-		path: urlObject.pathname,
+		host,
+		path,
 		body: opts.body,
 		headers: opts.headers
 	};
 	aws4.sign(signable, creds);
-	opts.headers = signable.headers;
+	return [signable.headers, signable.path, protocol];
+}
 
+function signedFetch(url, opts, creds) {
+	const [headers, path, protocol] = getSignableData(url, opts, creds);
 	// Try to use a global fetch here if possible otherwise risk getting a handle
 	// on the wrong fetch reference (ie. not a mocked one if in a unit test)
 	return (global.fetch || nodeFetch)(
-		`${urlObject.protocol}//${opts.headers.Host}${signable.path}`,
-		opts
+		`${protocol}//${opts.headers.Host}${path}`,
+		{ ...opts, headers }
 	);
 }
