@@ -23,7 +23,7 @@ async function resolveUrlAndHost(url) {
 	return url;
 }
 
-function signedFetch(url, opts, creds) {
+function setAwsCredentials(creds){
 	creds = creds || {};
 	creds.accessKeyId =
 		creds.accessKeyId ||
@@ -49,6 +49,11 @@ function signedFetch(url, opts, creds) {
 	if (sessionToken) {
 		creds.sessionToken = sessionToken;
 	}
+	return creds;
+}
+
+function signedFetch(url, opts, creds) {
+	creds = setAwsCredentials(creds);
 
 	const urlObject = urlParse(url);
 	const signable = {
