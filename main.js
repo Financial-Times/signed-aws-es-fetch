@@ -55,11 +55,11 @@ function setAwsCredentials(creds){
 function signedFetch(url, opts, creds) {
 	creds = setAwsCredentials(creds);
 
-	const urlObject = urlParse(url);
+	const urlObject = new URL(url);
 	const signable = {
 		method: opts.method,
 		host: urlObject.host,
-		path: urlObject.path,
+		path: urlObject.pathname,
 		body: opts.body,
 		headers: opts.headers
 	};
