@@ -7,17 +7,22 @@ const resolveCname = require('util').promisify(require('dns').resolveCname);
 
 module.exports = async function (url, opts, creds) {
 	opts = opts || {};
+	url = await resolveUrlAndHost(url);
+	return signedFetch(url, opts, creds);
+};
+
+async function resolveUrlAndHost(url) {
 	let urlObject = urlParse(url);
 	if (
 		/\.es\.amazonaws\.com$/.test(urlObject.host) ||
 		process.env.AWS_SIGNED_FETCH_DISABLE_DNS_RESOLUTION
 	) {
-		return signedFetch(url, opts, creds);
 	} else {
 		const hosts = await resolveCname(urlObject.host);
-		return signedFetch(url.replace(urlObject.host, hosts[0]), opts, creds);
+		url = url.replace(urlObject.host, hosts[0]);
 	}
-};
+	return url;
+}
 
 function signedFetch(url, opts, creds) {
 	creds = creds || {};
