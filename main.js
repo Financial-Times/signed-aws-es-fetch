@@ -4,6 +4,12 @@ const aws4 = require('aws4');
 const nodeFetch = require('node-fetch');
 const resolveCname = require('util').promisify(require('dns').resolveCname);
 
+const envKeys = {
+	awsKeys: ['ES_AWS_ACCESS_KEY', 'AWS_ACCESS_KEY', 'AWS_ACCESS_KEY_ID'],
+	awsSecretKeys: ['ES_AWS_SECRET_ACCESS_KEY', 'AWS_SECRET_ACCESS_KEY'],
+	tokenKeys: ['ES_AWS_SESSION_TOKEN', 'AWS_SESSION_TOKEN']
+};
+
 module.exports = async function (url, opts, creds) {
 	opts = opts || {};
 	url = await resolveUrlAndHost(url);
@@ -22,17 +28,16 @@ async function resolveUrlAndHost(url) {
 	return url;
 }
 
-function setAwsCredentials(creds){
+function getEnv(keys) {
+	const keyName = envKeys[keys].find((keyName) => process.env[keyName]);
+	return process.env[keyName];
+}
+
+function setAwsCredentials(creds) {
 	creds = creds || {};
-	creds.accessKeyId =
-		creds.accessKeyId ||
-		process.env.ES_AWS_ACCESS_KEY ||
-		process.env.AWS_ACCESS_KEY ||
-		process.env.AWS_ACCESS_KEY_ID;
-	creds.secretAccessKey =
-		creds.secretAccessKey ||
-		process.env.ES_AWS_SECRET_ACCESS_KEY ||
-		process.env.AWS_SECRET_ACCESS_KEY;
+	creds.accessKeyId = creds.accessKeyId || getEnv('awsKeys');
+
+	creds.secretAccessKey = creds.secretAccessKey || getEnv('awsSecretKeys');
 
 	let sessionToken = creds.sessionToken;
 	if (
@@ -40,10 +45,7 @@ function setAwsCredentials(creds){
 		// a boolean value is interpreted as string if set from vault
 		process.env.ES_AWS_SESSION_TOKEN !== 'false'
 	) {
-		sessionToken =
-			sessionToken ||
-			process.env.ES_AWS_SESSION_TOKEN ||
-			process.env.AWS_SESSION_TOKEN;
+		sessionToken = sessionToken || getEnv('tokenKeys');
 	}
 	if (sessionToken) {
 		creds.sessionToken = sessionToken;
@@ -53,7 +55,7 @@ function setAwsCredentials(creds){
 
 function getSignableData(url, opts, creds) {
 	creds = setAwsCredentials(creds);
-	const { host, path, protocol } = new URL(url);
+	const { host, pathname: path, protocol } = new URL(url);
 	const signable = {
 		method: opts.method,
 		host,
