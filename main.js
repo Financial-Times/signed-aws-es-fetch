@@ -1,11 +1,11 @@
-"use strict";
+'use strict';
 
-const aws4 = require("aws4");
-const nodeFetch = require("node-fetch");
-const urlParse = require("url").parse;
+const aws4 = require('aws4');
+const nodeFetch = require('node-fetch');
+const urlParse = require('url').parse;
 const resolveCname = require('util').promisify(require('dns').resolveCname);
 
-module.exports = function (url, opts, creds) {
+module.exports = async function (url, opts, creds) {
 	opts = opts || {};
 	let urlObject = urlParse(url);
 	if (
@@ -14,13 +14,8 @@ module.exports = function (url, opts, creds) {
 	) {
 		return signedFetch(url, opts, creds);
 	} else {
-		return resolveCname(urlObject.host).then(function (host) {
-			return signedFetch(
-				url.replace(urlObject.host, host[0]),
-				opts,
-				creds
-			);
-		});
+		const hosts = await resolveCname(urlObject.host);
+		return signedFetch(url.replace(urlObject.host, hosts[0]), opts, creds);
 	}
 };
 
@@ -40,7 +35,7 @@ function signedFetch(url, opts, creds) {
 	if (
 		process.env.ES_AWS_SESSION_TOKEN !== false &&
 		// a boolean value is interpreted as string if set from vault
-		process.env.ES_AWS_SESSION_TOKEN !== "false"
+		process.env.ES_AWS_SESSION_TOKEN !== 'false'
 	) {
 		sessionToken =
 			sessionToken ||
@@ -57,7 +52,7 @@ function signedFetch(url, opts, creds) {
 		host: urlObject.host,
 		path: urlObject.path,
 		body: opts.body,
-		headers: opts.headers,
+		headers: opts.headers
 	};
 	aws4.sign(signable, creds);
 	opts.headers = signable.headers;
