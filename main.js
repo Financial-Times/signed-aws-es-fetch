@@ -3,7 +3,7 @@
 const aws4 = require("aws4");
 const nodeFetch = require("node-fetch");
 const urlParse = require("url").parse;
-const resolveCname = require("denodeify")(require("dns").resolveCname);
+const resolveCname = require('util').promisify(require('dns').resolveCname);
 
 module.exports = function (url, opts, creds) {
 	opts = opts || {};
