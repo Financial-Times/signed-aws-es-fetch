@@ -12,12 +12,11 @@ module.exports = async function (url, opts, creds) {
 };
 
 async function resolveUrlAndHost(url) {
-	let urlObject = urlParse(url);
+	const urlObject = new URL(url);
 	if (
-		/\.es\.amazonaws\.com$/.test(urlObject.host) ||
-		process.env.AWS_SIGNED_FETCH_DISABLE_DNS_RESOLUTION
+		!/\.es\.amazonaws\.com$/.test(urlObject.host) &&
+		!process.env.AWS_SIGNED_FETCH_DISABLE_DNS_RESOLUTION
 	) {
-	} else {
 		const hosts = await resolveCname(urlObject.host);
 		url = url.replace(urlObject.host, hosts[0]);
 	}
