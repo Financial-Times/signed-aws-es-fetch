@@ -10,7 +10,7 @@
 		"jest": "^27.5.1"
 	},
 	"scripts": {
-		"test": "jest --forceExit ./test/main.test.js"
+		"test": "jest --forceExit ./__tests__/main.spec.js"
 	},
 	"author": "Jesus Redondo"
 }
