@@ -3,7 +3,7 @@
 ## Install
 
 ```
-npm install signed-aws-es-fetch
+npm install @financial-times/signed-aws-es-fetch
 ```
 
 ## Usage
