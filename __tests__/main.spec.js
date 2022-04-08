@@ -61,3 +61,18 @@ test('resolveValidHost resolve the canonical host', async () => {
 	const host = await rewire('../main').__get__('resolveValidHost')(urlObject);
 	expect(host).toEqual('www3.l.google.com');
 });
+
+test('getEnv returns the first environment variable with value in the list', () => {
+	// awsKeys: ['ES_AWS_ACCESS_KEY', 'AWS_ACCESS_KEY', 'AWS_ACCESS_KEY_ID']
+	const env = mainModule.__get__('process.env');
+    delete env.ES_AWS_ACCESS_KEY;
+    delete env.AWS_ACCESS_KEY;
+	env.AWS_ACCESS_KEY_ID = 'key3';
+	expect(mainModule.__get__('getEnv')('awsKeys')).toBe('key3');
+	delete env.AWS_ACCESS_KEY_ID;
+	env.AWS_ACCESS_KEY = 'key2';
+	expect(mainModule.__get__('getEnv')('awsKeys')).toBe('key2');
+	delete env.AWS_ACCESS_KEY;
+	env.ES_AWS_ACCESS_KEY = 'key1';
+	expect(mainModule.__get__('getEnv')('awsKeys')).toBe('key1');
+});
