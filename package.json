@@ -1,6 +1,6 @@
 {
 	"name": "@financial-times/signed-aws-es-fetch",
-	"version": "2.0.0",
+	"version": "2.1.0",
 	"main": "main.js",
 	"dependencies": {
 		"aws4": "^1.1.0",
