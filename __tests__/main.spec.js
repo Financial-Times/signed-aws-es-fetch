@@ -21,8 +21,8 @@ describe('resolveUrlAndHost', () => {
 	});
 	test(`process.env.AWS_SIGNED_FETCH_DISABLE_DNS_RESOLUTION=true and the url is returned witout modifications`, async () => {
 		const url = 'http://whatever.com/mypath';
-        const env = mainModule.__get__('process.env');
-        env.AWS_SIGNED_FETCH_DISABLE_DNS_RESOLUTION = true;
+		const env = mainModule.__get__('process.env');
+		env.AWS_SIGNED_FETCH_DISABLE_DNS_RESOLUTION = true;
 		const result = await mainModule.__get__('resolveUrlAndHost')(url);
 		expect(result).toBe(url);
 		delete env.AWS_SIGNED_FETCH_DISABLE_DNS_RESOLUTION;
@@ -33,4 +33,31 @@ describe('resolveUrlAndHost', () => {
 		const result = await mainModule.__get__('resolveUrlAndHost')(url);
 		expect(result).toBe('http://host1.com/mypath');
 	});
+	test(`the url doesn't match and process.env.AWS_SIGNED_FETCH_DISABLE_DNS_RESOLUTION=false, 
+	the url doesn't have the right format`, async () => {
+		const url = 'whatever';
+		const promise = mainModule.__get__('resolveUrlAndHost')(url);
+		const error = new Error();
+		error.code = 'ERR_INVALID_URL';
+		error.input = url;
+		await expect(promise).rejects.toEqual(error);
+	});
+	test(`the url doesn't match and process.env.AWS_SIGNED_FETCH_DISABLE_DNS_RESOLUTION=false, 
+	the url doesn't exist`, async () => {
+		dns.resolveCname.mockRestore();
+		util.promisify.mockRestore();
+		const url = 'http://whatever.zz';
+		expect.assertions(1);
+		await expect(mainModule.__get__('resolveUrlAndHost')(url)).rejects.toEqual(
+			new Error('Invalid Host')
+		);
+	});
+});
+
+test('resolveValidHost resolve the canonical host', async () => {
+	dns.resolveCname.mockRestore();
+	util.promisify.mockRestore();
+	const urlObject = new URL('http://gmail.google.com');
+	const host = await rewire('../main').__get__('resolveValidHost')(urlObject);
+	expect(host).toEqual('www3.l.google.com');
 });

@@ -2,6 +2,7 @@
 
 const aws4 = require('aws4');
 const nodeFetch = require('node-fetch');
+const logger = require('@financial-times/n-logger').default;
 const resolveCname = require('util').promisify(require('dns').resolveCname);
 
 const envKeys = {
@@ -16,14 +17,43 @@ module.exports = async function (url, opts, creds) {
 	return signedFetch(url, opts, creds);
 };
 
+function getURL(url) {
+	try {
+		const urlObject = new URL(url);
+		return urlObject;
+	} catch (error) {
+		logger.error({
+			event: 'Invalid URL',
+			data: {
+				url
+			}
+		});
+		throw error;
+	}
+}
+
+async function resolveValidHost(urlObject) {
+	const hosts = await resolveCname(urlObject.host);
+	if (hosts === undefined) {
+		logger.error({
+			event: 'Invalid Host',
+			data: {
+				url: urlObject
+			}
+		});
+		throw new Error('Invalid Host')
+	}
+	return hosts[0];
+}
+
 async function resolveUrlAndHost(url) {
-	const urlObject = new URL(url);
+	const urlObject = getURL(url);
 	if (
 		!/\.es\.amazonaws\.com$/.test(urlObject.host) &&
 		!process.env.AWS_SIGNED_FETCH_DISABLE_DNS_RESOLUTION
 	) {
-		const hosts = await resolveCname(urlObject.host);
-		url = url.replace(urlObject.host, hosts[0]);
+		const host = await resolveValidHost(urlObject);
+		url = url.replace(urlObject.host, host);
 	}
 	return url;
 }
@@ -36,7 +66,6 @@ function getEnv(keys) {
 function setAwsCredentials(creds) {
 	creds = creds || {};
 	creds.accessKeyId = creds.accessKeyId || getEnv('awsKeys');
-
 	creds.secretAccessKey = creds.secretAccessKey || getEnv('awsSecretKeys');
 
 	let sessionToken = creds.sessionToken;
