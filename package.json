@@ -13,7 +13,7 @@
 		"rewire": "^6.0.0"
 	},
 	"scripts": {
-		"test": "jest --forceExit ."
+		"test": "jest --forceExit --runInBand ."
 	},
 	"author": "Jesus Redondo"
 }

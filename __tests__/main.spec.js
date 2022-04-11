@@ -54,7 +54,7 @@ describe('resolveUrlAndHost', () => {
 	});
 });
 
-describe('resolveValidHost',() => {
+describe('resolveValidHost', () => {
 	test('resolveValidHost resolve the canonical host', async () => {
 		dns.resolveCname.mockRestore();
 		util.promisify.mockRestore();
@@ -62,7 +62,7 @@ describe('resolveValidHost',() => {
 		const host = await rewire('../main').__get__('resolveValidHost')(urlObject);
 		expect(host).toEqual('www3.l.google.com');
 	});
-	test('resolveValidHost caches the request to the same host', async ()=>{
+	test('resolveValidHost caches the request to the same host', async () => {
 		const urlObject = new URL('http://gmail.google.com');
 		const host1 = await mainModule.__get__('resolveValidHost')(urlObject);
 		const host2 = await mainModule.__get__('resolveValidHost')(urlObject);
@@ -73,15 +73,18 @@ describe('resolveValidHost',() => {
 
 test('getEnv returns the first environment variable with value in the list', () => {
 	// awsKeys: ['ES_AWS_ACCESS_KEY', 'AWS_ACCESS_KEY', 'AWS_ACCESS_KEY_ID']
-	const env = mainModule.__get__('process.env');
-    delete env.ES_AWS_ACCESS_KEY;
-    delete env.AWS_ACCESS_KEY;
-	env.AWS_ACCESS_KEY_ID = 'key3';
+	const process = mainModule.__set__('process.env', {
+		AWS_ACCESS_KEY_ID: 'key3'
+	});
+	//process.env.mockReturnValue({ AWS_ACCESS_KEY_ID: 'key3' });
 	expect(mainModule.__get__('getEnv')('awsKeys')).toBe('key3');
-	delete env.AWS_ACCESS_KEY_ID;
-	env.AWS_ACCESS_KEY = 'key2';
+	mainModule.__set__('process.env', {
+		AWS_ACCESS_KEY: 'key2'
+	});
 	expect(mainModule.__get__('getEnv')('awsKeys')).toBe('key2');
-	delete env.AWS_ACCESS_KEY;
-	env.ES_AWS_ACCESS_KEY = 'key1';
+	mainModule.__set__('process.env', {
+		ES_AWS_ACCESS_KEY: 'key1'
+	});
 	expect(mainModule.__get__('getEnv')('awsKeys')).toBe('key1');
+	process();
 });
