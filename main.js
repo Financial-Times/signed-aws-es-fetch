@@ -4,6 +4,9 @@ const aws4 = require('aws4');
 const nodeFetch = require('node-fetch');
 const logger = require('@financial-times/n-logger').default;
 const resolveCname = require('util').promisify(require('dns').resolveCname);
+const memoize = require('lodash/memoize');
+
+const memoizedResolveCname = memoize(resolveCname);
 
 const envKeys = {
 	awsKeys: ['ES_AWS_ACCESS_KEY', 'AWS_ACCESS_KEY', 'AWS_ACCESS_KEY_ID'],
@@ -33,7 +36,7 @@ function getURL(url) {
 }
 
 async function resolveValidHost(urlObject) {
-	const hosts = await resolveCname(urlObject.host);
+	const hosts = await memoizedResolveCname(urlObject.host);
 	if (hosts === undefined) {
 		logger.error({
 			event: 'Invalid Host',

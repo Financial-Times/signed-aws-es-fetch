@@ -54,12 +54,21 @@ describe('resolveUrlAndHost', () => {
 	});
 });
 
-test('resolveValidHost resolve the canonical host', async () => {
-	dns.resolveCname.mockRestore();
-	util.promisify.mockRestore();
-	const urlObject = new URL('http://gmail.google.com');
-	const host = await rewire('../main').__get__('resolveValidHost')(urlObject);
-	expect(host).toEqual('www3.l.google.com');
+describe('resolveValidHost',() => {
+	test('resolveValidHost resolve the canonical host', async () => {
+		dns.resolveCname.mockRestore();
+		util.promisify.mockRestore();
+		const urlObject = new URL('http://gmail.google.com');
+		const host = await rewire('../main').__get__('resolveValidHost')(urlObject);
+		expect(host).toEqual('www3.l.google.com');
+	});
+	test('resolveValidHost caches the request to the same host', async ()=>{
+		const urlObject = new URL('http://gmail.google.com');
+		const host1 = await mainModule.__get__('resolveValidHost')(urlObject);
+		const host2 = await mainModule.__get__('resolveValidHost')(urlObject);
+		expect(host1).toBe(host2);
+		expect(util.promisify).toHaveBeenCalledTimes(1);
+	});
 });
 
 test('getEnv returns the first environment variable with value in the list', () => {
