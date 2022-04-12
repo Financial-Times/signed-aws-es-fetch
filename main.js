@@ -44,7 +44,7 @@ async function resolveValidHost(urlObject) {
 				url: urlObject
 			}
 		});
-		throw new Error('Invalid Host')
+		throw new Error('Invalid Host');
 	}
 	return hosts[0];
 }
@@ -87,7 +87,7 @@ function setAwsCredentials(creds) {
 
 function getSignableData(url, opts, creds) {
 	creds = setAwsCredentials(creds);
-	const { host, pathname: path, protocol } = new URL(url);
+	const { host, pathname: path, search, protocol } = new URL(url);
 	const signable = {
 		method: opts.method,
 		host,
@@ -96,15 +96,16 @@ function getSignableData(url, opts, creds) {
 		headers: opts.headers
 	};
 	aws4.sign(signable, creds);
-	return [signable.headers, signable.path, protocol];
+	return [signable.headers, signable.path, search, protocol];
 }
 
 function signedFetch(url, opts, creds) {
-	const [headers, path, protocol] = getSignableData(url, opts, creds);
+	const [headers, path, search, protocol] = getSignableData(url, opts, creds);
+	opts.headers = headers;
 	// Try to use a global fetch here if possible otherwise risk getting a handle
 	// on the wrong fetch reference (ie. not a mocked one if in a unit test)
 	return (global.fetch || nodeFetch)(
-		`${protocol}//${opts.headers.Host}${path}`,
-		{ ...opts, headers }
+		`${protocol}//${opts.headers.Host}${path}${search}`,
+		opts
 	);
 }
