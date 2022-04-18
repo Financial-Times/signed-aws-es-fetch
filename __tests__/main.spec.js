@@ -71,20 +71,21 @@ describe('resolveValidHost', () => {
 	});
 });
 
-test('getEnv returns the first environment variable with value in the list', () => {
+test('defaultAwsCredentials returns the first environment variable with value in the list', async () => {
 	// awsKeys: ['ES_AWS_ACCESS_KEY', 'AWS_ACCESS_KEY', 'AWS_ACCESS_KEY_ID']
-	const process = mainModule.__set__('process.env', {
-		AWS_ACCESS_KEY_ID: 'key3'
+	await mainModule.__with__({
+		process: { env: { AWS_ACCESS_KEY_ID: 'key3' } }
+	})(async function () {
+		expect(mainModule.__get__('defaultAwsCredentials')('awsKeys')).toBe('key3');
 	});
-	//process.env.mockReturnValue({ AWS_ACCESS_KEY_ID: 'key3' });
-	expect(mainModule.__get__('getEnv')('awsKeys')).toBe('key3');
-	mainModule.__set__('process.env', {
-		AWS_ACCESS_KEY: 'key2'
+	await mainModule.__with__({
+		process: { env: { AWS_ACCESS_KEY: 'key2' } }
+	})(async function () {
+		expect(mainModule.__get__('defaultAwsCredentials')('awsKeys')).toBe('key2');
 	});
-	expect(mainModule.__get__('getEnv')('awsKeys')).toBe('key2');
-	mainModule.__set__('process.env', {
-		ES_AWS_ACCESS_KEY: 'key1'
+	await mainModule.__with__({
+		process: { env: { ES_AWS_ACCESS_KEY: 'key1' } }
+	})(async function () {
+		expect(mainModule.__get__('defaultAwsCredentials')('awsKeys')).toBe('key1');
 	});
-	expect(mainModule.__get__('getEnv')('awsKeys')).toBe('key1');
-	process();
 });
