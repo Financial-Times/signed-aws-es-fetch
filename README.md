@@ -33,3 +33,4 @@ signedFetch(`https://${HOSTNAME_OF_ELASTIC_CLUSTER}/${INDEX}/_search`, {
 ```
 
 To disable DNS resolution for domains outside of es.amazonaws.com you can use the `AWS_SIGNED_FETCH_DISABLE_DNS_RESOLUTION` environment variable.
+test
